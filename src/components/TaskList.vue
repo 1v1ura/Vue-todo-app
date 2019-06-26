@@ -20,13 +20,26 @@
         <p class="taskList__label">{{ task.name }}</p>
         <TagList :tagList="task.tags" />
       </div>
+      <div class="taskList__controller">
+        <button @click.stop="handleRemove(task)">
+          <FontAwesomeIcon :icon="icons.faTrashAlt" />
+        </button>
+        <button @click.stop="handleEdit(task)">
+          <FontAwesomeIcon :icon="icons.faEdit" />
+        </button>
+      </div>
     </li>
   </ul>
 </template>
 
 <script>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faCheckCircle, faCircle } from "@fortawesome/free-regular-svg-icons";
+import {
+  faCheckCircle,
+  faCircle,
+  faEdit,
+  faTrashAlt
+} from "@fortawesome/free-regular-svg-icons";
 import TagList from "@/components/TagList";
 
 export default {
@@ -34,6 +47,14 @@ export default {
   components: {
     FontAwesomeIcon,
     TagList
+  },
+  data() {
+    return {
+      icons: {
+        faEdit,
+        faTrashAlt
+      }
+    };
   },
   props: {
     taskList: {
@@ -52,16 +73,14 @@ export default {
     }
   },
   methods: {
-    updateTaskName(event, id) {
-      const data = {
-        id: id,
-        name: event.currentTarget.value
-      };
-
-      this.$emit("updateTaskName", data);
-    },
     changeCheck(data) {
       this.$emit("changeCheck", data);
+    },
+    handleEdit(task) {
+      this.$emit("editTask", task);
+    },
+    handleRemove(task) {
+      this.$emit("removeTask", task);
     }
   }
 };
@@ -97,6 +116,26 @@ export default {
     cursor: pointer;
   }
 
+  &__controller {
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding-left: 10px;
+    align-self: flex-end;
+
+    > button {
+      padding: 0;
+      appearance: none;
+      border: none;
+      background: transparent;
+      outline: none;
+      cursor: pointer;
+
+      &:not(:last-child) {
+        margin-right: 10px;
+      }
+    }
+  }
+
   &__check-input {
     display: none;
   }
@@ -104,7 +143,7 @@ export default {
   &__label {
     display: block;
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     font-weight: bold;
   }
 

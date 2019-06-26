@@ -4,9 +4,7 @@
       <div class="modal-wrapper">
         <div class="modal-container">
           <div class="modal-header">
-            <slot name="header">
-              default header
-            </slot>
+            <slot name="header"></slot>
           </div>
 
           <div class="modal-body">
@@ -37,15 +35,15 @@ export default {
   z-index: 9998;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  right: 0;
+  bottom: 0;
   padding: 20px 10px;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: opacity 0.3s ease;
-  overflow-y: scroll;
+  overflow-y: hidden;
 }
 
 .modal-wrapper {
@@ -71,10 +69,6 @@ export default {
 
 .modal-body {
   margin: 20px 0;
-}
-
-.modal-default-button {
-  float: right;
 }
 
 .modal-enter {

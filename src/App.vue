@@ -1,40 +1,45 @@
 <template>
   <div id="app">
     <h1 class="siteTitle">Vue-todo-app</h1>
-    <button id="show-modal" @click="newTaskModal = true">Show Modal</button>
+    <button id="show-modal" @click="taskFormModal = true">New Task</button>
 
     <TaskList
       :taskList="tasks"
-      @updateTaskName="updateTaskName"
       @changeCheck="changeCheck"
+      @removeTask="removeTask"
+      @editTask="editTask"
     />
 
-    <modal v-if="newTaskModal" @close="newTaskModal = false">
-      <h3 slot="header">Add new task</h3>
-      <form slot="body" class="newTaskForm">
+    <modal v-if="taskFormModal" @close="closeTaskFormModal">
+      <h3 slot="header">{{ editFlg ? "Edit Task" : "Add new task" }}</h3>
+      <form slot="body" class="taskForm">
         <table>
           <tr>
             <th>task name</th>
-            <td><input type="text" v-model="newTaskForm.name" /></td>
+            <td>
+              <input
+                type="text"
+                placeholder="input task name"
+                v-model="taskForm.name"
+                :style="errorFlg ? errorStyle : ''"
+              />
+            </td>
           </tr>
           <tr>
             <th>tag name</th>
             <td>
-              <vue-simple-suggest
-                v-model="suggestText"
-                :list="tagNameList"
-                :styles="autoCompleteStyle"
-                :destyled="true"
-                :filter-by-query="true"
-              >
-              </vue-simple-suggest>
-              <div>
-                <p>選択中のタグ: {{}}</p>
-              </div>
+              <TagSetting
+                :tags="tags"
+                :setTags="setTags"
+                @addNewTag="addNewTag"
+              />
             </td>
           </tr>
         </table>
       </form>
+      <div slot="footer">
+        <button @click="addTaskSubmit">add</button>
+      </div>
     </modal>
   </div>
 </template>
@@ -44,45 +49,84 @@ import Vuex from "vuex";
 import "normalize.css";
 import TaskList from "@/components/TaskList";
 import Modal from "@/components/Modal";
-import VueSimpleSuggest from "vue-simple-suggest";
-import "vue-simple-suggest/dist/styles.css"; // Using a css-loader
+import TagSetting from "@/components/TagSetting";
 
 export default {
   name: "app",
   components: {
     TaskList,
     Modal,
-    VueSimpleSuggest
+    TagSetting
   },
   data() {
     return {
-      newTaskModal: false,
-      newTaskForm: {
+      taskFormModal: false,
+      editFlg: false,
+      errorFlg: false,
+      errorStyle: {
+        border: "3px solid red"
+      },
+      taskForm: {
         id: null,
         name: "",
-        tags: "",
+        tags: [],
         done: false
       },
-      suggestText: "",
-      autoCompleteStyle: {
-        vueSimpleSuggest: "position-relative",
-        inputWrapper: "",
-        defaultInput: "form-control",
-        suggestions: "position-absolute list-group z-1000",
-        suggestItem: "list-group-item"
-      }
+      setTags: []
     };
   },
   computed: {
     ...Vuex.mapState("task", ["tasks"]),
     ...Vuex.mapState("tag", ["tags"]),
-    ...Vuex.mapGetters("tag", ["tagNameList"])
-  },
-  created() {
-    this.newTaskForm.id = Object.keys(this.tags).length + 1;
+    ...Vuex.mapGetters("tag", ["getTagData"])
   },
   methods: {
-    ...Vuex.mapActions("task", ["updateTaskName", "changeCheck"])
+    ...Vuex.mapActions("task", ["changeCheck", "removeTask"]),
+    ...Vuex.mapActions("tag", ["addNewTag"]),
+    closeTaskFormModal() {
+      this.editFlg = false;
+      this.taskFormModal = false;
+    },
+    addTaskSubmit() {
+      if (this.taskForm.name.length === 0) {
+        this.errorFlg = true;
+        return;
+      } else {
+        this.errorFlg = false;
+      }
+
+      this.setTags.forEach(tag => {
+        this.taskForm.tags = [];
+
+        if (tag.id === null) {
+          tag.id = this.tags[this.tags.length - 1].id + 1;
+          this.$store.dispatch("tag/addNewTag", tag);
+        }
+
+        this.taskForm.tags.push(tag.id);
+      });
+
+      if (this.editFlg) {
+        this.$store.dispatch("task/updateTask", this.taskForm);
+      } else {
+        this.taskForm.id = this.tasks[this.tasks.length - 1].id + 1;
+        this.$store.dispatch("task/addNewTask", this.taskForm);
+      }
+
+      // init
+      this.taskForm.name = "";
+      this.taskForm.tags = [];
+      this.setTags = [];
+      this.taskFormModal = false;
+    },
+    editTask(task) {
+      this.editFlg = true;
+      this.taskFormModal = true;
+      this.taskForm = task;
+      this.setTags = this.taskForm.tags.map(tagId => {
+        return this.getTagData(tagId);
+      });
+    }
   }
 };
 </script>
@@ -104,12 +148,13 @@ export default {
   text-align: center;
 }
 
-.newTaskForm {
+.taskForm {
   table {
     width: 100%;
   }
 
-  th, td {
+  th,
+  td {
     text-align: left;
     vertical-align: top;
   }
@@ -122,8 +167,18 @@ export default {
     width: 80%;
   }
 
-  /deep/ input {
+  input {
+    box-sizing: border-box;
     width: 100%;
+    padding: 10px;
+    border: 1px solid #cde;
+    border-radius: 3px;
+    background: white;
+    outline: none;
+    -webkit-transition: all 0.1s;
+    transition: all 0.1s;
+    -webkit-transition-delay: 0.05s;
+    transition-delay: 0.05s;
   }
 }
 </style>
