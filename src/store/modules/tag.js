@@ -2,10 +2,8 @@ const tag = {
   namespaced: true,
   state: {
     tags: [
-      { id: 1, name: "tag1" },
-      { id: 2, name: "tag2" },
-      { id: 3, name: "tag3" },
-      { id: 4, name: "tag4" }
+      { id: 1, name: "sample-tag1" },
+      { id: 2, name: "sample-tag2" }
     ]
   },
   getters: {
@@ -19,7 +17,7 @@ const tag = {
   },
   mutations: {
     addNewTag(state, tag) {
-      state.tags.push(tag)
+      state.tags = [...state.tags, tag]
     }
   },
   actions: {

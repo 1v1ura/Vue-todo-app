@@ -2,57 +2,42 @@ const task = {
   namespaced: true,
   state: {
     tasks: [
-      { id: 1, name: "hoge", done: true, tags: [1, 2] },
-      { id: 2, name: "fuga", done: true, tags: [1, 3] },
-      { id: 3, name: "piyo", done: false, tags: [1] }
+      { id: 1, name: "Sampe", done: false, tags: [1, 2] },
     ]
   },
+  getters: {},
   mutations: {
-    updateTaskName(state, { id, name }) {
-      const target = state.tasks.find(task => task.id === id);
-      if (target) {
-        target.name = name;
-      }
-    },
     changeCheck(state, { id, done }) {
-      const target = state.tasks.find(task => task.id === id);
-      if (target) {
-        target.done = done;
-      }
-    },
-    addNewTask(state, { id, name, done, tags }) {
-      state.tasks.push({
-        id: id,
-        name: name,
-        done: done,
-        tags: tags.slice()
+      state.tasks.some(task => {
+        if (task.id === id) {
+          task.done = done;
+          return false;
+        }
       });
+    },
+    addNewTask(state, task) {
+      state.tasks = [...state.tasks, Object.assign({}, task)];
     },
     removeTask(state, { id }) {
       state.tasks.some((task, index) => {
         if (task.id === id) {
           state.tasks.splice(index, 1);
-          return false
+          return false;
         }
-      })
+      });
     },
-    updateTask(state, {id, name, done, tags}) {
-      state.tasks.some((task, index) => {
-        if (task.id === id) {
-          state.tasks[index] = {
-            id: id,
-            name: name,
-            done: done,
-            tags: tags.slice()
-          }
+    updateTask(state, data) {
+      const tasks = state.tasks.map(task => {
+        if (task.id === data.id) {
+          return Object.assign({}, data);
+        } else {
+          return Object.assign({}, task);
         }
-      })
+      });
+      state.tasks = tasks;
     }
   },
   actions: {
-    updateTaskName({ commit }, payload) {
-      commit("updateTaskName", payload);
-    },
     changeCheck({ commit }, payload) {
       commit("changeCheck", payload);
     },

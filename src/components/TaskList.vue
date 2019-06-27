@@ -61,7 +61,7 @@ export default {
       type: Array,
       default: () => [],
       required: true
-    }
+    },
   },
   computed: {
     checkIconState() {
@@ -81,7 +81,7 @@ export default {
     },
     handleRemove(task) {
       this.$emit("removeTask", task);
-    }
+    },
   }
 };
 </script>

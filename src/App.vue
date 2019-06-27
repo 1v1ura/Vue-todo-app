@@ -38,7 +38,7 @@
         </table>
       </form>
       <div slot="footer">
-        <button @click="addTaskSubmit">add</button>
+        <button @click="submitTask">{{ editFlg ? "update" : "add" }}</button>
       </div>
     </modal>
   </div>
@@ -87,7 +87,7 @@ export default {
       this.editFlg = false;
       this.taskFormModal = false;
     },
-    addTaskSubmit() {
+    submitTask() {
       if (this.taskForm.name.length === 0) {
         this.errorFlg = true;
         return;
@@ -95,21 +95,23 @@ export default {
         this.errorFlg = false;
       }
 
+      this.taskForm.tags = [];
       this.setTags.forEach(tag => {
-        this.taskForm.tags = [];
-
         if (tag.id === null) {
           tag.id = this.tags[this.tags.length - 1].id + 1;
           this.$store.dispatch("tag/addNewTag", tag);
         }
-
         this.taskForm.tags.push(tag.id);
       });
 
       if (this.editFlg) {
         this.$store.dispatch("task/updateTask", this.taskForm);
       } else {
-        this.taskForm.id = this.tasks[this.tasks.length - 1].id + 1;
+        if (this.tasks.length >= 1 ) {
+          this.taskForm.id = this.tasks[this.tasks.length - 1].id + 1;
+        } else {
+          this.taskForm.id = 1;
+        }
         this.$store.dispatch("task/addNewTask", this.taskForm);
       }
 
@@ -117,7 +119,7 @@ export default {
       this.taskForm.name = "";
       this.taskForm.tags = [];
       this.setTags = [];
-      this.taskFormModal = false;
+      this.closeTaskFormModal();
     },
     editTask(task) {
       this.editFlg = true;
